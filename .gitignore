@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Xcode / iOS
+DerivedData/
+*.xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+*.ipa
+*.dSYM
+*.dSYM.zip
+.build/
+# Wenn ihr CocoaPods nutzt:
+Pods/
+
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
