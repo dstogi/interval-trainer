@@ -1,0 +1,12 @@
+[
+  { "name": "Liegestütze", "tags": ["push", "upper"] },
+  { "name": "Kniebeugen", "tags": ["legs"] },
+  { "name": "Ausfallschritte", "tags": ["legs"] },
+  { "name": "Plank", "tags": ["core"] },
+  { "name": "Mountain Climbers", "tags": ["core", "cardio"] },
+  { "name": "Jumping Jacks", "tags": ["cardio"] },
+  { "name": "High Knees", "tags": ["cardio"] },
+  { "name": "Glute Bridge", "tags": ["legs", "glutes"] },
+  { "name": "Russian Twists", "tags": ["core"] },
+  { "name": "Burpees", "tags": ["cardio", "fullbody"] }
+]
