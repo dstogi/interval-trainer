@@ -1,0 +1,18 @@
+{
+  "title": "HIIT Kurz",
+  "timing": {
+    "warmupSec": 0,
+    "workSec": 20,
+    "restBetweenRepsSec": 0,
+    "repsPerSet": 1,
+    "restBetweenSetsSec": 60,
+    "sets": 4,
+    "cooldownSec": 0,
+    "omitFinalRest": true
+  },
+  "exerciseMode": "single",
+  "rotation": "perWorkInterval",
+  "exercises": [
+    { "name": "Liegestütze", "notes": "Rumpf fest, sauber" }
+  ]
+}
