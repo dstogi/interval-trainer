@@ -1,9 +1,5 @@
 package com.dstogi.intervaltrainer
 
-class CardsStore {
-}
-package com.dstogi.intervaltrainer
-
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
