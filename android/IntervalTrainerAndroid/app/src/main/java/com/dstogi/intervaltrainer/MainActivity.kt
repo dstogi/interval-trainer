@@ -43,7 +43,18 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun IntervalTrainerApp() {
-    val cards = remember { mutableStateListOf(sampleCard()) }
+    val context = LocalContext.current
+    val store = remember(context) { CardsStore(context) }
+    val scope = rememberCoroutineScope()
+
+    // Beim ersten Start Sample-Karte anlegen
+    LaunchedEffect(Unit) {
+        store.ensureSeeded(sampleCard())
+    }
+
+    // Karten aus DataStore laden
+    val cards by store.cardsFlow.collectAsState(initial = emptyList())
+
     var screen: Screen by remember { mutableStateOf(Screen.Home) }
 
     when (val s = screen) {
@@ -57,7 +68,10 @@ private fun IntervalTrainerApp() {
                     id = UUID.randomUUID().toString(),
                     title = card.title + " (Copy)"
                 )
-                cards.add(0, copy)
+                scope.launch { store.upsert(copy) }
+            },
+            onDelete = { card ->
+                scope.launch { store.delete(card.id) }
             }
         )
 
@@ -65,9 +79,10 @@ private fun IntervalTrainerApp() {
             initial = s.existing,
             onCancel = { screen = Screen.Home },
             onSave = { saved ->
-                val index = cards.indexOfFirst { it.id == saved.id }
-                if (index >= 0) cards[index] = saved else cards.add(0, saved)
-                screen = Screen.Home
+                scope.launch {
+                    store.upsert(saved)
+                    screen = Screen.Home
+                }
             }
         )
 
@@ -101,7 +116,8 @@ private fun HomeScreen(
     onAdd: () -> Unit,
     onStart: (IntervalCard) -> Unit,
     onEdit: (IntervalCard) -> Unit,
-    onDuplicate: (IntervalCard) -> Unit
+    onDuplicate: (IntervalCard) -> Unit,
+    onDelete: (IntervalCard) -> Unit
 ) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Interval Trainer") }) },
@@ -131,6 +147,8 @@ private fun HomeScreen(
                             Button(onClick = { onStart(card) }) { Text("Start") }
                             OutlinedButton(onClick = { onEdit(card) }) { Text("Bearbeiten") }
                             OutlinedButton(onClick = { onDuplicate(card) }) { Text("Duplizieren") }
+                            OutlinedButton(onClick = { onDelete(card) }) { Text("Löschen") }
+
                         }
                     }
                 }
