@@ -1,5 +1,13 @@
 package com.dstogi.intervaltrainer
 
+import android.content.Context
+import android.media.AudioManager
+import android.media.ToneGenerator
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import androidx.compose.ui.platform.LocalContext
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,6 +30,8 @@ import java.util.UUID
 import kotlin.random.Random
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.runtime.DisposableEffect
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -317,8 +327,69 @@ private fun RunnerScreen(card: IntervalCard, onBack: () -> Unit) {
             delay(100)
         }
     }
+    LaunchedEffect(card.id) { session.start() }
 
     val ui = session.ui
+    val context = LocalContext.current
+
+// Tone (Beep)
+    val tone = remember { ToneGenerator(AudioManager.STREAM_MUSIC, 80) }
+    DisposableEffect(Unit) {
+        onDispose { tone.release() }
+    }
+
+// Vibrator
+    val vibrator = remember(context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vm = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vm.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+    }
+
+    fun beepShort() {
+        tone.startTone(ToneGenerator.TONE_PROP_BEEP, 120)
+    }
+
+    fun vibrateShort() {
+        val effect = VibrationEffect.createOneShot(60, VibrationEffect.DEFAULT_AMPLITUDE)
+        vibrator.vibrate(effect)
+    }
+
+// Phase-Change Feedback
+    var lastPhaseIndex by remember { mutableStateOf(-1) }
+    LaunchedEffect(ui.phaseIndex, ui.status) {
+        if (ui.status == RunStatus.RUNNING && ui.phaseIndex != lastPhaseIndex) {
+            lastPhaseIndex = ui.phaseIndex
+            beepShort()
+            vibrateShort()
+        }
+    }
+
+// 3-2-1 Countdown nur in ARBEIT
+    var lastCountdown by remember { mutableStateOf(-1) }
+    LaunchedEffect(ui.remainingSec, ui.phaseType, ui.status) {
+        if (ui.status == RunStatus.RUNNING && ui.phaseType == PhaseType.WORK) {
+            val r = ui.remainingSec
+            if (r in 1..3 && r != lastCountdown) {
+                lastCountdown = r
+                beepShort()
+            }
+            if (r > 3) lastCountdown = -1
+        } else {
+            lastCountdown = -1
+        }
+    }
+
+
+    val view = LocalView.current
+    DisposableEffect(ui.status) {
+        view.keepScreenOn = (ui.status == RunStatus.RUNNING || ui.status == RunStatus.PAUSED)
+        onDispose { view.keepScreenOn = false }
+    }
+
 
     val phaseTitle = when (ui.phaseType) {
         PhaseType.WARMUP -> "WARMUP"
