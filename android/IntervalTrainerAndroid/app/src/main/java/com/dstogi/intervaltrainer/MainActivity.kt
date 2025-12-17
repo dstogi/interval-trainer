@@ -196,6 +196,31 @@ private fun EditorScreen(
     val randomExercises = remember {
         listOf("Liegestütze", "Kniebeugen", "Ausfallschritte", "Plank", "Mountain Climbers", "Jumping Jacks", "Burpees")
     }
+    fun randomizeSession() {
+        val workOptions = listOf(20, 30, 40)
+        val restOptions = listOf(20, 30, 45, 60)
+        val setsOptions = listOf(4, 6, 8, 10)
+        val warmupOptions = listOf(0, 30)
+        val cooldownOptions = listOf(0, 30)
+
+        val work = workOptions.random()
+        val rest = restOptions.random()
+        val sets = setsOptions.random()
+        val warmup = warmupOptions.random()
+        val cooldown = cooldownOptions.random()
+
+        title = "Random HIIT (${formatDuration(work)} / ${formatDuration(rest)} × $sets)"
+        exerciseName = randomExercises.random()
+        exerciseNotes = ""
+
+        warmupText = formatDuration(warmup)
+        workText = formatDuration(work)
+        restRepsText = formatDuration(0)
+        repsText = "1"
+        restSetsText = formatDuration(rest)
+        setsText = sets.toString()
+        cooldownText = formatDuration(cooldown)
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(if (initial == null) "Neue Karte" else "Karte bearbeiten") }) }
@@ -233,7 +258,7 @@ private fun EditorScreen(
                 minLines = 2
             )
 
-            Divider()
+            HorizontalDivider()
             Text("Zeiten (mm:ss oder Sekunden)", style = MaterialTheme.typography.titleMedium)
 
             DurationField("Warmup", warmupText) { warmupText = it }
@@ -321,6 +346,8 @@ private fun RunnerScreen(card: IntervalCard, onBack: () -> Unit) {
     val phases = remember(card) { PhaseBuilder.build(card) }
     val session = remember(card) { IntervalSession(phases) }
 
+    LaunchedEffect(card.id) { session.start() }
+
     LaunchedEffect(session) {
         while (isActive) {
             session.tick()
@@ -331,6 +358,10 @@ private fun RunnerScreen(card: IntervalCard, onBack: () -> Unit) {
 
     val ui = session.ui
     val context = LocalContext.current
+
+    OutlinedButton(onClick = { randomizeSession() }) {
+        Text("🎲 Zufalls-Session")
+    }
 
 // Tone (Beep)
     val tone = remember { ToneGenerator(AudioManager.STREAM_MUSIC, 80) }
@@ -435,4 +466,8 @@ private fun RunnerScreen(card: IntervalCard, onBack: () -> Unit) {
             OutlinedButton(onClick = { session.stop(); onBack() }) { Text("Zurück") }
         }
     }
+}
+
+fun randomizeSession() {
+    TODO("Not yet implemented")
 }
